@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRUD Frontend</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input { margin: 5px; }
+    button { margin: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+  </style>
+</head>
+<body>
+
+  <h1>Simple CRUD Frontend</h1>
+
+  <div>
+    <input type="text" id="name" placeholder="Enter name" />
+    <input type="text" id="description" placeholder="Enter description" />
+    <button onclick="createItem()">Add Item</button>
+  </div>
+
+  <table id="itemsTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const API_URL = 'http://localhost:3000/items';
+
+    async function fetchItems() {
+      const response = await fetch(API_URL);
+      const items = await response.json();
+      const tableBody = document.querySelector('#itemsTable tbody');
+      tableBody.innerHTML = '';
+      items.forEach(item => {
+        const row = `<tr>
+          <td>${item.id}</td>
+          <td>${item.name}</td>
+          <td>${item.description}</td>
+          <td>
+            <button onclick="deleteItem(${item.id})">Delete</button>
+            <button onclick="updateItem(${item.id})">Update</button>
+          </td>
+        </tr>`;
+        tableBody.insertAdjacentHTML('beforeend', row);
+      });
+    }
+
+    async function createItem() {
+      const name = document.getElementById('name').value;
+      const description = document.getElementById('description').value;
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description })
+      });
+      fetchItems();
+    }
+
+    async function deleteItem(id) {
+      await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      fetchItems();
+    }
+
+    async function updateItem(id) {
+      const name = prompt('Enter new name:');
+      const description = prompt('Enter new description:');
+      await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description })
+      });
+      fetchItems();
+    }
+
+    fetchItems(); // Initial fetch
+  </script>
+
+</body>
+</html>
